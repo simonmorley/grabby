@@ -12,7 +12,8 @@ contract Grbby is ERC721URIStorage, Ownable {
   uint256 public tokenCounter;
   uint256 public start;
   uint256 public supply;
-  uint256 public PRICE;
+  uint256 public price;
+  uint public max;
   bool public active;
 
   event Grabby(uint256);
@@ -23,30 +24,39 @@ contract Grbby is ERC721URIStorage, Ownable {
     uint256 _start,
     uint256 _supply
   ) public ERC721 (name, symbol) {
-      start = _start;
-      supply = _supply;
-      active = true;
+    start = _start;
+    supply = _supply;
+    active = true;
   }
 
   modifier isActive {
-      require(active, "You can't get grabby cos we've closed the show.");
-      _;
+    require(active, "You can't get grabby cos we've closed the show.");
+    _;
   }
 
   modifier started {
-      require(block.timestamp >= start, "You can't get grabby until I say.");
-      _;
+    require(block.timestamp >= start, "You can't get grabby until I say.");
+    _;
+  }
+
+  modifier priced {
+    require(price > 0, "Price not set, oh no.");
+    _;
   }
 
   // TODO needs provenance
   // need to check withdrawal of funds
   // mint more than one
 
-  function mint(uint256 _count) public payable started isActive {
+  function mint(uint256 _count) public payable started isActive priced {
 
     require(_count > 0, "Don't be a twat.");
 
     require(supply >= (tokenCounter + _count), "We're done now you filthy grabber.");
+
+    require(max == 0 || _count <= max, "Too much grabbing going down here boy!");
+
+    require(msg.value >= price * _count, "Not enough dosh coming in this way");
 
     // inc logic here including the count
     // block the whales, restrict to a count per user
@@ -67,7 +77,11 @@ contract Grbby is ERC721URIStorage, Ownable {
   }
 
   function setPrice(uint256 _price) external onlyOwner {
-    PRICE = _price;
+    price = _price;
+  }
+
+  function setMax(uint _max) external onlyOwner {
+    max = _max;
   }
 
   function toggleStatus() external onlyOwner {
@@ -89,4 +103,7 @@ contract Grbby is ERC721URIStorage, Ownable {
     return baseURI;
   }
 
+  function withdraw() external onlyOwner {
+    payable(msg.sender).transfer(address(this).balance);
+  }
 }
