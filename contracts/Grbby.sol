@@ -4,6 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
+import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Grbby is ERC721URIStorage, Ownable {
 
@@ -28,7 +29,7 @@ contract Grbby is ERC721URIStorage, Ownable {
   }
 
   modifier isActive {
-      require(active == true, "You can't get grabby cos we've closed the show.");
+      require(active, "You can't get grabby cos we've closed the show.");
       _;
   }
 
@@ -37,29 +38,32 @@ contract Grbby is ERC721URIStorage, Ownable {
       _;
   }
 
-  modifier open {
-      require(supply > tokenCounter, "We're done now you filthy grabber.");
-      _;
-  }
-
   // TODO needs provenance
   // need to check withdrawal of funds
   // mint more than one
-  // set the price
-  // update the price
 
-  function mint(string memory tokenURI) public payable started open isActive {
+  function mint(uint256 _count) public payable started isActive {
+
+    require(_count > 0, "Don't be a twat.");
+
+    require(supply >= (tokenCounter + _count), "We're done now you filthy grabber.");
+
     // inc logic here including the count
     // block the whales, restrict to a count per user
 
-    uint256 newItemId = tokenCounter;
-    _safeMint(msg.sender, newItemId);
-    _setTokenURI(newItemId, tokenURI);
-    uint256 x = tokenCounter;
-    tokenCounter += 1;
+    for (uint256 i = 0; i < _count; i++) {
+      uint256 newItemId = tokenCounter;
+      _safeMint(msg.sender, newItemId);
+
+      string memory tokenURI = Strings.toString(tokenCounter);
+
+      _setTokenURI(newItemId, tokenURI);
+      uint256 x = tokenCounter;
+      tokenCounter += 1;
+    }
 
     // TODO
-    emit Grabby(x);
+    emit Grabby(_count);
   }
 
   function setPrice(uint256 _price) external onlyOwner {
@@ -84,4 +88,5 @@ contract Grbby is ERC721URIStorage, Ownable {
   function _baseURI() internal view override returns (string memory) {
     return baseURI;
   }
+
 }
