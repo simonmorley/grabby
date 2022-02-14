@@ -51,15 +51,9 @@ contract Grbby is ERC721URIStorage, Ownable {
   function mint(uint256 _count) public payable started isActive priced {
 
     require(_count > 0, "Don't be a twat.");
-
     require(supply >= (tokenCounter + _count), "We're done now you filthy grabber.");
-
     require(max == 0 || _count <= max, "Too much grabbing going down here boy!");
-
     require(msg.value >= price * _count, "Not enough dosh coming in this way");
-
-    // inc logic here including the count
-    // block the whales, restrict to a count per user
 
     for (uint256 i = 0; i < _count; i++) {
       uint256 newItemId = tokenCounter;
