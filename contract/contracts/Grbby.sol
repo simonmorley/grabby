@@ -4,7 +4,7 @@ pragma solidity ^0.8.0;
 import "@openzeppelin/contracts/token/ERC721/ERC721.sol";
 import "@openzeppelin/contracts/token/ERC721/extensions/ERC721URIStorage.sol";
 import "@openzeppelin/contracts/access/Ownable.sol";
-import "@openzeppelin/contracts/utils/Strings.sol";
+// import "@openzeppelin/contracts/utils/Strings.sol";
 
 contract Grbby is ERC721URIStorage, Ownable {
 
@@ -49,11 +49,29 @@ contract Grbby is ERC721URIStorage, Ownable {
   // mint more than one
 
   function mint(uint256 _count) public payable started isActive priced {
-
     require(_count > 0, "Don't be a twat.");
     require(supply >= (tokenCounter + _count), "We're done now you filthy grabber.");
     require(max == 0 || _count <= max, "Too much grabbing going down here boy!");
     require(msg.value >= price * _count, "Not enough dosh coming in this way");
+
+    for (uint256 i = 0; i < _count; i++) {
+      uint256 newItemId = tokenCounter;
+      _safeMint(msg.sender, newItemId);
+
+      string memory tokenURI = Strings.toString(tokenCounter);
+
+      _setTokenURI(newItemId, tokenURI);
+      uint256 x = tokenCounter;
+      tokenCounter += 1;
+    }
+
+    // TODO // add the tokenCounter, URI
+    emit Grabby(_count);
+  }
+
+  function preMint(uint256 _count) public payable started isActive onlyOwner {
+    require(_count > 0, "Don't be a twat.");
+    require(supply >= (tokenCounter + _count), "We're done now you filthy grabber.");
 
     for (uint256 i = 0; i < _count; i++) {
       uint256 newItemId = tokenCounter;

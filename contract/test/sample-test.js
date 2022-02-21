@@ -173,7 +173,12 @@ describe("Grbby validators etc", function () {
     expect(balance0ETH).to.eq("0");
   });
 
-  // it("should not allow people to mint the same url", async function () {
+  it("should mint some for opensea", async function () {
+    const [owner, random] = await ethers.getSigners();
+    await expect(grbby.connect(random).preMint(10)).to.be.revertedWith("Ownable: caller is not the owner");
+    await expect(grbby.preMint(10));
+    expect (await grbby.tokenCounter()).to.eq(10);
+  })
   //   const Grbby = await ethers.getContractFactory("Grbby");
 
   //   const name = 'Grbby';
